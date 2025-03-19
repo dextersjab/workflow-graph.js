@@ -1,67 +1,69 @@
 {
-    "name": "workflow-graph",
-    "version": "1.0.2",
-    "description": "A lightweight TypeScript library for defining, validating, and executing workflow graphs with support for error handling, retries, and Mermaid diagram generation.",
-    "type": "module",
-    "main": "./dist/workflow_graph/index.js",
-    "types": "./dist/workflow_graph/index.d.ts",
-    "exports": {
-        ".": {
-            "types": "./dist/workflow_graph/index.d.ts",
-            "import": "./dist/workflow_graph/index.js"
-        }
-    },
-    "files": [
-        "dist",
-        "LICENSE",
-        "README.md"
-    ],
-    "scripts": {
-        "test": "NODE_OPTIONS=--experimental-vm-modules jest",
-        "test:tsc": "tsc --project tsconfig.test.json --noEmit",
-        "start": "node example_usage.js",
-        "start:ts": "NODE_OPTIONS=\"--loader ts-node/esm\" node example_usage.ts",
-        "clean": "rm -rf dist",
-        "build": "npm run clean && tsc",
-        "prepare": "npm run build",
-        "prepublishOnly": "npm test && npm run test:tsc",
-        "dev": "tsc --watch",
-        "build:example": "tsc --project tsconfig.example.json && node dist-example/example_usage.js"
-    },
-    "repository": {
-        "type": "git",
-        "url": "git+https://github.com/dextersjab/workflow-graph.js.git"
-    },
-    "keywords": [
-        "workflow",
-        "graph",
-        "nodejs",
-        "mermaid",
-        "typescript",
-        "workflow-graph",
-        "directed-graph",
-        "async",
-        "retry",
-        "error-handling"
-    ],
-    "author": "Dexter Awoyemi",
-    "license": "MIT",
-    "bugs": {
-        "url": "https://github.com/dextersjab/workflow-graph.js/issues"
-    },
-    "homepage": "https://github.com/dextersjab/workflow-graph.js#readme",
-    "devDependencies": {
-        "@types/jest": "^29.5.10",
-        "@types/node": "^20.10.0",
-        "jest": "^29.0.0",
-        "ts-jest": "^29.2.6",
-        "ts-node": "^10.9.1",
-        "typescript": "^5.3.3"
-    },
-    "dependencies": {
-        "p-queue": "^8.1.0"
-    },
-    "engines": {
-        "node": ">=16.0.0"
+  "name": "workflow-graph",
+  "version": "1.0.2",
+  "description": "A lightweight TypeScript library for defining, validating, and executing workflow graphs with support for error handling, retries, and Mermaid diagram generation.",
+  "type": "module",
+  "main": "./dist/workflow_graph/index.js",
+  "types": "./dist/workflow_graph/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/workflow_graph/index.d.ts",
+      "import": "./dist/workflow_graph/index.js"
     }
+  },
+  "files": [
+    "dist",
+    "LICENSE",
+    "README.md"
+  ],
+  "scripts": {
+    "test": "NODE_OPTIONS=--experimental-vm-modules jest",
+    "test:tsc": "tsc --project tsconfig.test.json --noEmit",
+    "start": "node example_usage.js",
+    "start:ts": "NODE_OPTIONS=\"--loader ts-node/esm\" node example_usage.ts",
+    "clean": "rm -rf dist",
+    "build": "npm run clean && tsc",
+    "prepare": "npm run build && husky install",
+    "prepublishOnly": "npm test && npm run test:tsc",
+    "dev": "tsc --watch",
+    "build:example": "tsc --project tsconfig.example.json && node dist-example/example_usage.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dextersjab/workflow-graph.js.git"
+  },
+  "keywords": [
+    "workflow",
+    "graph",
+    "nodejs",
+    "mermaid",
+    "typescript",
+    "workflow-graph",
+    "directed-graph",
+    "async",
+    "retry",
+    "error-handling"
+  ],
+  "author": "Dexter Awoyemi",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/dextersjab/workflow-graph.js/issues"
+  },
+  "homepage": "https://github.com/dextersjab/workflow-graph.js#readme",
+  "devDependencies": {
+    "@types/jest": "^29.5.10",
+    "@types/node": "^20.10.0",
+    "husky": "^8.0.0",
+    "jest": "^29.0.0",
+    "lint-staged": "^15.5.0",
+    "ts-jest": "^29.2.6",
+    "ts-node": "^10.9.1",
+    "typescript": "^5.3.3"
+  },
+  "dependencies": {
+    "p-queue": "^8.1.0"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  }
 }

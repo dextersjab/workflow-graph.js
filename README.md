@@ -116,19 +116,17 @@ This example creates a workflow that:
 The corresponding **Mermaid** diagram would look like:
 
 ```mermaid
-flowchart TD
-    __start__["START"]
-    __end__["END"]
-    addition["addition"]
-    is_even_check["is_even_check"]
-    even_handler["even_handler"]
-    odd_handler["odd_handler"]
-    __start__ --> addition
+stateDiagram-v2
+    state "addition" as addition
+    state "is_even_check" as is_even_check
+    state "even_handler" as even_handler
+    state "odd_handler" as odd_handler
+    [*] --> addition
     addition --> is_even_check
-    is_even_check -.|True|.-> even_handler
-    is_even_check -.|False|.-> odd_handler
-    even_handler --> __end__
-    odd_handler --> __end__
+    is_even_check --> even_handler: True
+    is_even_check --> odd_handler: False
+    even_handler --> [*]
+    odd_handler --> [*]
 ```
 
 ### Error Handling and Retries
@@ -192,7 +190,7 @@ const mermaidCode = graph.toMermaid();
 console.log(mermaidCode);
 ```
 
-The generated diagram uses dashed lines (`-.->`), rather than decision nodes, to represent conditional branches. This provides a cleaner and more accurate representation of how the workflow behaves. This follows the same helpful convention as LangGraph.
+The generated diagram uses the stateDiagram-v2 format with the [*] notation for start and end states. Conditional branches are represented with labeled transitions. This provides a clean and intuitive representation of how the workflow behaves.
 
 ## Package Structure
 

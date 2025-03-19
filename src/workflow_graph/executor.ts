@@ -48,30 +48,32 @@ export class CompiledGraph {
    * @returns A Mermaid diagram code block
    */
   toMermaid(): string {
-    const mermaidLines: string[] = ['```mermaid', 'flowchart TD'];
-
-    // Add special START/END nodes
-    mermaidLines.push(`    ${START}["START"]`);
-    mermaidLines.push(`    ${END}["END"]`);
+    const mermaidLines: string[] = ['```mermaid', 'stateDiagram-v2'];
 
     // Add user-defined nodes
     for (const nodeName of Object.keys(this.nodes)) {
-      mermaidLines.push(`    ${nodeName}["${nodeName}"]`);
+      mermaidLines.push(`    state "${nodeName}" as ${nodeName}`);
     }
 
-    // Add direct edges
+    // Add direct edges from START to entry points
     for (const [start, destList] of Object.entries(this.edges)) {
       for (const end of destList) {
-        mermaidLines.push(`    ${start} --> ${end}`);
+        if (start === START) {
+          mermaidLines.push(`    [*] --> ${end}`);
+        } else if (end === END) {
+          mermaidLines.push(`    ${start} --> [*]`);
+        } else {
+          mermaidLines.push(`    ${start} --> ${end}`);
+        }
       }
     }
 
-    // Add conditional edges (dashed lines, with labels if branches)
+    // Add conditional edges (with notes for conditions)
     for (const [source, branchDict] of Object.entries(this.branches)) {
       for (const [branchId, branch] of Object.entries(branchDict)) {
         // A "then" edge
         if (branch.then) {
-          mermaidLines.push(`    ${source} -.-> ${branch.then}`);
+          mermaidLines.push(`    ${source} --> ${branch.then}`);
         }
         // "ends" object mapping condition => next node
         if (branch.ends) {
@@ -80,12 +82,13 @@ export class CompiledGraph {
             let displayCondition = condition;
             if (condition === 'true') displayCondition = 'True';
             if (condition === 'false') displayCondition = 'False';
-            mermaidLines.push(`    ${source} -.|${displayCondition}|.-> ${target}`);
+            
+            // In stateDiagram-v2, we can use note to describe the condition
+            mermaidLines.push(`    ${source} --> ${target}: ${displayCondition}`);
           }
         }
       }
     }
-
     mermaidLines.push('```');
     return mermaidLines.join('\n');
   }

@@ -217,6 +217,6 @@ describe('test_graph_operations', () => {
     const mermaid = await workflow.toMermaid();
     expect(typeof mermaid).toBe('string');
     expect(mermaid.includes('mermaid')).toBeTruthy();
-    expect(mermaid.includes('flowchart')).toBeTruthy();
+    expect(mermaid.includes('stateDiagram-v2')).toBeTruthy();
   });
 }); 
