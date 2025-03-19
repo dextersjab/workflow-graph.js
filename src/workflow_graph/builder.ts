@@ -5,7 +5,6 @@
 
 import { START, END } from './constants.js';
 import {
-  WorkflowGraphError,
   InvalidNodeNameError,
   DuplicateNodeError,
   InvalidEdgeError,

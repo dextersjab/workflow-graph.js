@@ -4,7 +4,6 @@
  */
 
 import { START, END } from './constants.js';
-import { NodeSpec, Branch } from './models.js';
 import { ExecutionError } from './exceptions.js';
 import { Nodes, Branches, Edge, AdjacencyList } from './types.js';
 
