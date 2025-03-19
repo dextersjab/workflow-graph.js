@@ -1,0 +1,31 @@
+{
+    "name": "workflow-graph",
+    "version": "1.0.0",
+    "description": "A Node.js port of the workflow graph library with support for execution, error handling, retries, and Mermaid diagram generation.",
+    "main": "src/workflow_graph/index.js",
+    "scripts": {
+      "test": "jest",
+      "start": "node example_usage.js"
+    },
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/dextersjab/workflow-graph-js.git"
+    },
+    "keywords": [
+      "workflow",
+      "graph",
+      "nodejs",
+      "mermaid",
+      "port"
+    ],
+    "author": "Dexter Awoyemi",
+    "license": "MIT",
+    "bugs": {
+      "url": "https://github.com/yourusername/workflow-graph/issues"
+    },
+    "homepage": "https://github.com/yourusername/workflow-graph#readme",
+    "devDependencies": {
+      "jest": "^29.0.0"
+    }
+  }
+  
