@@ -13,16 +13,30 @@
 
 ## Installation
 
-To install **WorkflowGraph** in your project, run:
+### From GitHub
+
+To install directly from the GitHub repository:
 
 ```shell
 npm install https://github.com/dextersjab/workflow-graph.js
 ```
 
-(or the equivalent Git URL that hosts your ported **WorkflowGraph** code). You can also install via a Git reference:
+This will download the source code and build it automatically during the installation process.
+
+If you encounter any issues with the automatic build, you can manually build the package after installation:
 
 ```shell
-npm install git+https://github.com/yourusername/workflow-graph.git#main
+cd node_modules/workflow-graph
+npm install
+npm run build
+```
+
+### From Git URL
+
+You can also install via a Git URL reference:
+
+```shell
+npm install git+https://github.com/dextersjab/workflow-graph.js.git#main
 ```
 
 ## Using with JavaScript or TypeScript

@@ -1,0 +1,17 @@
+{
+  "name": "workflow-graph-example-ts",
+  "version": "1.0.0",
+  "description": "Example usage of workflow-graph package with TypeScript",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "npm run build && node dist/index.js"
+  },
+  "dependencies": {
+    "workflow-graph": "file:../"
+  },
+  "devDependencies": {
+    "typescript": "^5.3.3"
+  }
+} 

@@ -1,10 +1,10 @@
 {
     "name": "workflow-graph",
     "version": "1.0.0",
-    "description": "A Node.js port of the workflow graph library with support for execution, error handling, retries, and Mermaid diagram generation.",
+    "description": "A lightweight TypeScript library for defining, validating, and executing workflow graphs with support for error handling, retries, and Mermaid diagram generation.",
     "type": "module",
-    "main": "dist/workflow_graph/index.js",
-    "types": "dist/workflow_graph/index.d.ts",
+    "main": "./dist/workflow_graph/index.js",
+    "types": "./dist/workflow_graph/index.d.ts",
     "exports": {
         ".": {
             "types": "./dist/workflow_graph/index.d.ts",
@@ -21,21 +21,28 @@
         "test:tsc": "tsc --project tsconfig.test.json --noEmit",
         "start": "node example_usage.js",
         "start:ts": "NODE_OPTIONS=\"--loader ts-node/esm\" node example_usage.ts",
-        "build": "tsc",
-        "prepublishOnly": "npm run build",
+        "clean": "rm -rf dist",
+        "build": "npm run clean && tsc",
+        "prepare": "npm run build",
+        "prepublishOnly": "npm test && npm run test:tsc",
         "dev": "tsc --watch",
         "build:example": "tsc --project tsconfig.example.json && node dist-example/example_usage.js"
     },
     "repository": {
         "type": "git",
-        "url": "git+https://github.com/dextersjab/workflow-graph-js.git"
+        "url": "git+https://github.com/dextersjab/workflow-graph.js.git"
     },
     "keywords": [
         "workflow",
         "graph",
         "nodejs",
         "mermaid",
-        "port"
+        "typescript",
+        "workflow-graph",
+        "directed-graph",
+        "async",
+        "retry",
+        "error-handling"
     ],
     "author": "Dexter Awoyemi",
     "license": "MIT",
@@ -53,5 +60,8 @@
     },
     "dependencies": {
         "p-queue": "^8.1.0"
+    },
+    "engines": {
+        "node": ">=16.0.0"
     }
 }
