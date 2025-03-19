@@ -4,77 +4,84 @@
 
 import { WorkflowGraph } from '../../src/workflow_graph/index.js';
 
+// Import Jest types
+import { expect, jest, test, describe, beforeEach } from '@jest/globals';
+
 describe('test_execution', () => {
-  let graph;
+  let graph: WorkflowGraph;
 
   beforeEach(() => {
     graph = new WorkflowGraph();
   });
 
   test('test_simple_workflow_execution', async () => {
-    function addOne(x) {
+    function addOne(x: number): number {
       return x + 1;
     }
 
-    function multiplyByTwo(x) {
+    function multiplyByTwo(x: number): number {
       return x * 2;
     }
 
-    graph.addNode('add', addOne);
-    graph.addNode('multiply', multiplyByTwo);
+    graph.addNode<number, number>('add', addOne);
+    graph.addNode<number, number>('multiply', multiplyByTwo);
     graph.addEdge('add', 'multiply');
     graph.setEntryPoint('add');
     graph.setFinishPoint('multiply');
 
-    const result = await graph.executeAsync(1);
+    const result = await graph.executeAsync<number, number>(1);
     // (1 + 1) * 2 = 4
     expect(result).toBe(4);
   });
 
   test('test_conditional_workflow_execution', async () => {
-    function isEven(x) {
+    function isEven(x: number): boolean {
       return x % 2 === 0;
     }
 
-    function addOne(x) {
+    function addOne(x: number): number {
       return x + 1;
     }
 
-    function multiplyByTwo(x) {
+    function multiplyByTwo(x: number): number {
       return x * 2;
     }
 
-    graph.addNode('check', isEven);
-    graph.addNode('add', addOne);
-    graph.addNode('multiply', multiplyByTwo);
+    graph.addNode<number, boolean>('check', isEven);
+    graph.addNode<number, number>('add', addOne);
+    graph.addNode<number, number>('multiply', multiplyByTwo);
 
     // Suppose addConditionalEdges maps a boolean to two different nodes
-    graph.addConditionalEdges('check', isEven, {
-      true: 'add',
-      false: 'multiply'
-    });
+    graph.addConditionalEdges<number>(
+      'check', 
+      isEven, 
+      {
+        'true': 'add',
+        'false': 'multiply'
+      }
+    );
 
     graph.setEntryPoint('check');
 
     // Even input => proceed to 'add' node
-    let result = await graph.executeAsync(2);
+    let result = await graph.executeAsync<number, number>(2);
     expect(result).toBe(3);
 
     // Odd input => proceed to 'multiply' node
-    result = await graph.executeAsync(3);
+    result = await graph.executeAsync<number, number>(3);
     expect(result).toBe(6);
   });
 
   test('test_async_node_execution', async () => {
-    async function asyncAddOne(x) {
+    async function asyncAddOne(x: number): Promise<number> {
       // Simulate small delay
       await new Promise(resolve => setTimeout(resolve, 100));
       return x + 1;
     }
 
-    graph.addNode('async_add', asyncAddOne);
+    graph.addNode<number, Promise<number>>('async_add', asyncAddOne);
     graph.setEntryPoint('async_add');
-    const result = await graph.executeAsync(1);
+    const result = await graph.executeAsync<number, number>(1);
 
     expect(result).toBe(2);
   });
@@ -86,60 +93,66 @@ describe('test_execution', () => {
      * in a real application.
      */
 
-    const streamingResults = [];
+    interface StreamingResult {
+      node: string;
+      value: number;
+      timestamp: string;
+    }
 
-    function processData(x) {
+    const streamingResults: StreamingResult[] = [];
+
+    function processData(x: number): number {
       const result = x * 10;
-      processData.lastResult = result;
+      (processData as any).lastResult = result;
       return result;
     }
 
-    function analyzeResult(x) {
+    function analyzeResult(x: number): number {
       const result = x + 5;
-      analyzeResult.lastResult = result;
+      (analyzeResult as any).lastResult = result;
       return result;
     }
 
-    function formatOutput(x) {
+    function formatOutput(x: number): number {
       const result = x * 2;
-      formatOutput.lastResult = result;
+      (formatOutput as any).lastResult = result;
       return result;
     }
 
-    function processCallback() {
+    function processCallback(): void {
       streamingResults.push({
         node: 'process',
-        value: processData.lastResult,
+        value: (processData as any).lastResult,
         timestamp: '2024-01-01T00:00:00Z'
       });
     }
 
-    function analyzeCallback() {
+    function analyzeCallback(): void {
       streamingResults.push({
         node: 'analyze',
-        value: analyzeResult.lastResult,
+        value: (analyzeResult as any).lastResult,
         timestamp: '2024-01-01T00:00:00Z'
       });
     }
 
-    function formatCallback() {
+    function formatCallback(): void {
       streamingResults.push({
         node: 'format',
-        value: formatOutput.lastResult,
+        value: (formatOutput as any).lastResult,
         timestamp: '2024-01-01T00:00:00Z'
       });
     }
 
-    graph.addNode('process', processData, { callback: processCallback });
-    graph.addNode('analyze', analyzeResult, { callback: analyzeCallback });
-    graph.addNode('format', formatOutput, { callback: formatCallback });
+    graph.addNode<number, number>('process', processData, { callback: processCallback });
+    graph.addNode<number, number>('analyze', analyzeResult, { callback: analyzeCallback });
+    graph.addNode<number, number>('format', formatOutput, { callback: formatCallback });
 
     graph.addEdge('process', 'analyze');
     graph.addEdge('analyze', 'format');
     graph.setEntryPoint('process');
     graph.setFinishPoint('format');
 
-    const finalResult = await graph.executeAsync(5);
+    const finalResult = await graph.executeAsync<number, number>(5);
 
     expect(finalResult).toBe(110); // ((5 * 10) + 5) * 2
     expect(streamingResults).toHaveLength(3);
@@ -162,4 +175,4 @@ describe('test_execution', () => {
       timestamp: '2024-01-01T00:00:00Z'
     });
   });
-});
+}); 

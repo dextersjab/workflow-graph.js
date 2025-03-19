@@ -3,10 +3,15 @@
     "version": "1.0.0",
     "description": "A Node.js port of the workflow graph library with support for execution, error handling, retries, and Mermaid diagram generation.",
     "type": "module",
-    "main": "src/workflow_graph/index.js",
+    "main": "dist/workflow_graph/index.js",
+    "types": "dist/workflow_graph/index.d.ts",
     "scripts": {
-        "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
-        "start": "node example_usage.js"
+        "test": "NODE_OPTIONS=--experimental-vm-modules jest",
+        "start": "node example_usage.js",
+        "start:ts": "NODE_OPTIONS=\"--loader ts-node/esm\" node example_usage.ts",
+        "build": "tsc",
+        "dev": "tsc --watch",
+        "build:example": "tsc --project tsconfig.example.json && node dist-example/example_usage.js"
     },
     "repository": {
         "type": "git",
@@ -22,11 +27,16 @@
     "author": "Dexter Awoyemi",
     "license": "MIT",
     "bugs": {
-        "url": "https://github.com/yourusername/workflow-graph/issues"
+        "url": "https://github.com/dextersjab/workflow-graph.js/issues"
     },
-    "homepage": "https://github.com/yourusername/workflow-graph#readme",
+    "homepage": "https://github.com/dextersjab/workflow-graph.js#readme",
     "devDependencies": {
-        "jest": "^29.0.0"
+        "@types/jest": "^29.5.10",
+        "@types/node": "^20.10.0",
+        "jest": "^29.0.0",
+        "ts-jest": "^29.2.6",
+        "ts-node": "^10.9.1",
+        "typescript": "^5.3.3"
     },
     "dependencies": {
         "p-queue": "^8.1.0"

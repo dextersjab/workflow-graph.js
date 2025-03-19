@@ -2,12 +2,16 @@
  * Unit tests for workflow graph error handling and retry functionality.
  */
 
-import { WorkflowGraph } from '../../src/workflow_graph/index.js';
-// If you have custom exceptions, import them like:
-// import { ExecutionError } from '../../src/workflow_graph/exceptions.js';
+import { 
+  WorkflowGraph, 
+  ExecutionError 
+} from '../../src/workflow_graph/index.js';
+
+// Import Jest types
+import { expect, jest, test, describe, beforeEach } from '@jest/globals';
 
 describe('test_error_handling', () => {
-  let graph;
+  let graph: WorkflowGraph;
 
   beforeEach(() => {
     // Re-instantiate the graph for each test
@@ -17,7 +21,7 @@ describe('test_error_handling', () => {
   test('test_retry_policy', async () => {
     let attempts = 0;
 
-    function failingNode(x) {
+    function failingNode(x: number): number {
       attempts += 1;
       if (attempts < 3) {
         throw new Error('Temporary failure');
@@ -26,7 +30,7 @@ describe('test_error_handling', () => {
     }
 
     // We assume addNode can accept options for retries & backoff
-    graph.addNode('retry_node', failingNode, { retries: 3, backoffFactor: 0.1 });
+    graph.addNode<number, number>('retry_node', failingNode, { retries: 3, backoffFactor: 0.1 });
     graph.setEntryPoint('retry_node');
     const result = await graph.executeAsync(1);
 
@@ -35,17 +39,17 @@ describe('test_error_handling', () => {
   });
 
   test('test_error_handler', async () => {
-    function failingNode(x) {
+    function failingNode(x: number): number {
       throw new Error('Permanent failure');
     }
 
-    function errorHandler(error) {
+    function errorHandler(error: Error): number {
       expect(error).toBeInstanceOf(Error);
       expect(error.message).toBe('Permanent failure');
       return -1; // Return a fallback value
     }
 
-    graph.addNode('fail_node', failingNode, { onError: errorHandler });
+    graph.addNode<number, number>('fail_node', failingNode, { onError: errorHandler });
     graph.setEntryPoint('fail_node');
     const result = await graph.executeAsync(1);
 
@@ -55,18 +59,18 @@ describe('test_error_handling', () => {
   test('test_retry_then_error_handler', async () => {
     let attempts = 0;
 
-    function failingNode(x) {
+    function failingNode(x: number): number {
       attempts += 1;
       throw new Error(`Failure #${attempts}`);
     }
 
-    function errorHandler(error) {
+    function errorHandler(error: Error): number {
       expect(error).toBeInstanceOf(Error);
       expect(error.message).toBe('Failure #3');
       return -1;
     }
 
-    graph.addNode('retry_fail_node', failingNode, {
+    graph.addNode<number, number>('retry_fail_node', failingNode, {
       retries: 2,
       backoffFactor: 0.1,
       onError: errorHandler
@@ -82,7 +86,7 @@ describe('test_error_handling', () => {
   test('test_async_retry', async () => {
     let attempts = 0;
 
-    async function asyncFailingNode(x) {
+    async function asyncFailingNode(x: number): Promise<number> {
       attempts += 1;
       // Simulate a small delay
       await new Promise(resolve => setTimeout(resolve, 100));
@@ -92,7 +96,7 @@ describe('test_error_handling', () => {
       return x + 1;
     }
 
-    graph.addNode('async_retry_node', asyncFailingNode, {
+    graph.addNode<number, Promise<number>>('async_retry_node', asyncFailingNode, {
       retries: 3,
       backoffFactor: 0.1
     });
@@ -102,4 +106,4 @@ describe('test_error_handling', () => {
     expect(attempts).toBe(3);
     expect(result).toBe(2);
   });
-});
+}); 

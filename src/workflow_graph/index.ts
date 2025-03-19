@@ -1,5 +1,5 @@
 /**
- * index.js
+ * index.ts
  * Barrel file that re-exports everything from the submodules.
  */
 
@@ -14,7 +14,22 @@ import {
   TypeMismatchError,
   ExecutionError
 } from './exceptions.js';
-import { NodeSpec, Branch } from './models.js';
+import { 
+  NodeSpec, 
+  Branch, 
+  NodeAction,
+  PathFunction,
+  ErrorHandler,
+  TypeCheck,
+  NodeSpecOptions,
+  BranchEnds
+} from './models.js';
+import {
+  Nodes,
+  Branches,
+  Edge,
+  AdjacencyList
+} from './types.js';
 
 // Export all public API components
 export {
@@ -25,6 +40,18 @@ export {
   // Models
   NodeSpec,
   Branch,
+  
+  // Types
+  NodeAction,
+  PathFunction,
+  ErrorHandler,
+  TypeCheck,
+  NodeSpecOptions,
+  BranchEnds,
+  Nodes,
+  Branches,
+  Edge,
+  AdjacencyList,
   
   // Constants
   START,
@@ -37,4 +64,4 @@ export {
   InvalidEdgeError,
   TypeMismatchError,
   ExecutionError
-};
+}; 

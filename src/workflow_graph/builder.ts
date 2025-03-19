@@ -1,5 +1,5 @@
 /**
- * builder.js
+ * builder.ts
  * Contains the WorkflowGraph class for constructing and validating workflow graphs.
  */
 
@@ -11,10 +11,32 @@ import {
   InvalidEdgeError,
   TypeMismatchError
 } from './exceptions.js';
-import { NodeSpec, Branch } from './models.js';
-import { CompiledGraph } from './executor.js';
+import { NodeSpec, NodeAction, NodeSpecOptions, Branch, BranchEnds, PathFunction } from './models.js';
+import { Nodes, Branches, Edge } from './types.js';
 
-class WorkflowGraph {
+/**
+ * CompiledGraph interface to avoid circular dependency
+ */
+interface ICompiledGraph {
+  validate(): ICompiledGraph;
+  execute<InputType = any, OutputType = any>(
+    inputData: InputType, 
+    callback?: (message: string) => void
+  ): Promise<OutputType>;
+  executeAsync<InputType = any, OutputType = any>(
+    inputData: InputType, 
+    callback?: (message: string) => void
+  ): Promise<OutputType>;
+  toMermaid(): string;
+}
+
+export class WorkflowGraph {
+  nodes: Nodes;
+  edges: Edge[];
+  branches: Branches;
+  entryPoints: Set<string>;
+  finishPoints: Set<string>;
+
   constructor() {
     this.nodes = {};           // nodeName => NodeSpec
     this.edges = [];           // array of [startNode, endNode]
@@ -26,11 +48,15 @@ class WorkflowGraph {
   /**
    * Add a node to the workflow.
    * 
-   * @param {string} nodeName 
-   * @param {function} actionFn 
-   * @param {object} [options] - Additional fields: callback, errorHandler, retryCount, retryDelay, etc.
+   * @param nodeName - Name of the node to add
+   * @param actionFn - The function to execute for this node
+   * @param options - Additional configuration for the node
    */
-  addNode(nodeName, actionFn, options = {}) {
+  addNode<InputType = any, OutputType = any>(
+    nodeName: string, 
+    actionFn: NodeAction<InputType, OutputType>, 
+    options: Omit<NodeSpecOptions<InputType, OutputType>, 'action'> = {}
+  ): WorkflowGraph {
     // Check for reserved names
     if (nodeName === START || nodeName === END) {
       throw new InvalidNodeNameError(`"${nodeName}" is reserved.`);
@@ -39,7 +65,7 @@ class WorkflowGraph {
       throw new DuplicateNodeError(`Node "${nodeName}" already exists.`);
     }
 
-    const spec = new NodeSpec({
+    const spec = new NodeSpec<InputType, OutputType>({
       action: actionFn,
       ...options
     });
@@ -51,10 +77,10 @@ class WorkflowGraph {
   /**
    * Add an edge between two existing nodes.
    * 
-   * @param {string} fromNode 
-   * @param {string} toNode 
+   * @param fromNode - Source node name
+   * @param toNode - Target node name
    */
-  addEdge(fromNode, toNode) {
+  addEdge(fromNode: string, toNode: string): WorkflowGraph {
     if (![START, END].includes(fromNode) && !this.nodes[fromNode]) {
       throw new InvalidEdgeError(`Node "${fromNode}" does not exist.`);
     }
@@ -69,17 +95,22 @@ class WorkflowGraph {
    * Add conditional edges originating from a node.
    * This is how we handle branching logic.
    * 
-   * @param {string} fromNode - The node from which branches originate
-   * @param {function} pathFn - A function used to determine branch path from input
-   * @param {Record<string | boolean, string>} pathMap - object mapping `true/false/...` to node names
-   * @param {string} [branchKey] - optional identifier for the branch group
+   * @param fromNode - The node from which branches originate
+   * @param pathFn - A function used to determine branch path from input
+   * @param pathMap - Object mapping condition values to node names
+   * @param branchKey - Optional identifier for the branch group
    */
-  addConditionalEdges(fromNode, pathFn, pathMap, branchKey) {
+  addConditionalEdges<T = any>(
+    fromNode: string, 
+    pathFn: PathFunction<T>, 
+    pathMap: BranchEnds, 
+    branchKey?: string
+  ): WorkflowGraph {
     if (!this.branches[fromNode]) {
       this.branches[fromNode] = {};
     }
     const bKey = branchKey || pathFn.name || 'branch';
-    const b = new Branch(pathFn, pathMap);
+    const b = new Branch<T>(pathFn, pathMap);
     this.branches[fromNode][bKey] = b;
     return this;
   }
@@ -88,10 +119,10 @@ class WorkflowGraph {
    * Mark a node as an entry point. 
    * Typically you only need one, but you may have multiple entry points if desired.
    * 
-   * @param {string} nodeName 
+   * @param nodeName - The name of the node to mark as entry point
    */
-  setEntryPoint(nodeName) {
-    // If the node doesn't exist, create a START->nodeName edge
+  setEntryPoint(nodeName: string): WorkflowGraph {
+    // If the node doesn't exist, throw error
     if (!this.nodes[nodeName]) {
       throw new InvalidNodeNameError(`Entry node "${nodeName}" does not exist.`);
     }
@@ -105,9 +136,9 @@ class WorkflowGraph {
    * Mark a node as a finish point. 
    * Typically you only need one, but you can have multiple finish points.
    * 
-   * @param {string} nodeName 
+   * @param nodeName - The name of the node to mark as finish point
    */
-  setFinishPoint(nodeName) {
+  setFinishPoint(nodeName: string): WorkflowGraph {
     if (!this.nodes[nodeName]) {
       throw new InvalidNodeNameError(`Finish node "${nodeName}" does not exist.`);
     }
@@ -119,9 +150,8 @@ class WorkflowGraph {
 
   /**
    * Validate the graph for name collisions, type mismatches, etc.
-   * (You can expand or customize this as needed.)
    */
-  validate() {
+  validate(): WorkflowGraph {
     // Example: check for type mismatches
     // For each edge, if either node has type constraints, verify they match
     for (const [start, end] of this.edges) {
@@ -133,7 +163,9 @@ class WorkflowGraph {
       const endSpec = this.nodes[end];
       if (startSpec.outputType && endSpec.inputType) {
         if (startSpec.outputType !== endSpec.inputType) {
-          throw new TypeMismatchError(`Type mismatch: ${start} outputs ${startSpec.outputType.name}, but ${end} expects ${endSpec.inputType.name}`);
+          throw new TypeMismatchError(
+            `Type mismatch: ${start} outputs ${startSpec.outputType.name}, but ${end} expects ${endSpec.inputType.name}`
+          );
         }
       }
     }
@@ -144,12 +176,16 @@ class WorkflowGraph {
   /**
    * Compile the workflow graph into a CompiledGraph, which is actually runnable.
    * 
-   * @returns {CompiledGraph} A compiled representation of the workflow graph
+   * @returns A compiled representation of the workflow graph
    */
-  compile() {
+  async compile(): Promise<ICompiledGraph> {
     // Validate before compilation
     this.validate();
 
+    // Dynamically import CompiledGraph to avoid circular dependency
+    const executorModule = await import('./executor.js');
+    const CompiledGraph = executorModule.CompiledGraph;
+    
     const compiled = new CompiledGraph(
       this.nodes,
       this.edges,
@@ -162,34 +198,38 @@ class WorkflowGraph {
 
   /**
    * Convenience method to compile and execute the graph with the given input
-   * @param {any} inputData - The input to the graph
-   * @returns {any} The result of execution
+   * @param inputData - The input to the graph
+   * @param callback - Optional callback function for node execution messages
+   * @returns The result of execution
    */
-  execute(inputData) {
-    const compiled = this.compile();
-    return compiled.execute(inputData);
+  async execute<InputType = any, OutputType = any>(
+    inputData: InputType, 
+    callback?: (message: string) => void
+  ): Promise<OutputType> {
+    const compiled = await this.compile();
+    return compiled.execute(inputData, callback);
   }
 
   /**
    * Convenience method to compile and execute the graph asynchronously with the given input
-   * @param {any} inputData - The input to the graph
-   * @returns {Promise<any>} A promise that resolves to the result of execution
+   * @param inputData - The input to the graph
+   * @param callback - Optional callback function for node execution messages
+   * @returns A promise that resolves to the result of execution
    */
-  async executeAsync(inputData) {
-    const compiled = this.compile();
-    return compiled.executeAsync(inputData);
+  async executeAsync<InputType = any, OutputType = any>(
+    inputData: InputType, 
+    callback?: (message: string) => void
+  ): Promise<OutputType> {
+    const compiled = await this.compile();
+    return compiled.executeAsync(inputData, callback);
   }
 
   /**
    * Convenience method to generate a Mermaid diagram
-   * @returns {string} The Mermaid diagram
+   * @returns The Mermaid diagram
    */
-  toMermaid() {
-    const compiled = this.compile();
+  async toMermaid(): Promise<string> {
+    const compiled = await this.compile();
     return compiled.toMermaid();
   }
-}
-
-export {
-  WorkflowGraph
-};
+} 
