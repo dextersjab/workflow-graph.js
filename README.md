@@ -2,6 +2,8 @@
 
 **WorkflowGraph** is a lightweight, self-contained TypeScript library for building and executing directed graph workflows. It's an alternative to **LangGraph** for those seeking independence from LangChain and the flexibility to implement agent workflows, while still enabling real-time streaming of results.
 
+The Python-version is available at [https://github.com/dextersjab/workflow-graph]().
+
 ## Features
 
 - **Graph-based workflows**: Build flexible, directed workflows where nodes are customizable tasks.
@@ -13,38 +15,15 @@
 
 ## Installation
 
-### From GitHub
-
-To install directly from the GitHub repository:
+To install **WorkflowGraph** in your project, run:
 
 ```shell
-npm install https://github.com/dextersjab/workflow-graph.js
-```
-
-This will download the source code and build it automatically during the installation process.
-
-If you encounter any issues with the automatic build, you can manually build the package after installation:
-
-```shell
-cd node_modules/workflow-graph
-npm install
-npm run build
-```
-
-### From Git URL
-
-You can also install via a Git URL reference:
-
-```shell
-npm install git+https://github.com/dextersjab/workflow-graph.js.git#main
+npm install workflow-graph
 ```
 
 ## Using with JavaScript or TypeScript
 
-This library is written in TypeScript but compiles to JavaScript for distribution. This means:
-
-- **TypeScript users**: You'll get full type safety and autocompletion
-- **JavaScript users**: You can use the library without any TypeScript-related configuration
+This library is written in TypeScript for type safety but compiles to JavaScript for distribution.
 
 ### JavaScript Usage
 
@@ -213,13 +192,7 @@ const mermaidCode = graph.toMermaid();
 console.log(mermaidCode);
 ```
 
-The generated diagram uses dashed lines (`-.->`), rather than decision nodes, to represent conditional branches. This provides a cleaner and more accurate representation of how the workflow behaves.
-
-Mermaid diagrams can be rendered in:
-- GitHub Markdown (just paste the code)
-- VS Code (with the Mermaid extension)
-- Web browsers (using the Mermaid Live Editor)
-- Many other tools that support Mermaid
+The generated diagram uses dashed lines (`-.->`), rather than decision nodes, to represent conditional branches. This provides a cleaner and more accurate representation of how the workflow behaves. This follows the same helpful convention as LangGraph.
 
 ## Package Structure
 

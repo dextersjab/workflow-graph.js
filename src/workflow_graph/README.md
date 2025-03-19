@@ -1,7 +1,3 @@
-Below is the **TypeScript-oriented** version of your `src/workflow_graph/README.md`. It preserves the **word-for-word** structure and content from your Python edition, except where necessary to reference **TypeScript** files (`*.ts`) and examples instead of Python (`*.py`). Everything else (headings, conceptual descriptions, etc.) remains the same.
-
----
-
 # WorkflowGraph package
 
 This package provides a lightweight framework for building and executing directed, computational workflow graphs in TypeScript. It allows you to define nodes as functions, connect them with edges, and execute the workflow with input data.
