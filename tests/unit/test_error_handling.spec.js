@@ -2,9 +2,9 @@
  * Unit tests for workflow graph error handling and retry functionality.
  */
 
-const { WorkflowGraph } = require('../../src/workflow_graph');
+import { WorkflowGraph } from '../../src/workflow_graph/index.js';
 // If you have custom exceptions, import them like:
-// const { ExecutionError } = require('../../src/workflow_graph/exceptions');
+// import { ExecutionError } from '../../src/workflow_graph/exceptions.js';
 
 describe('test_error_handling', () => {
   let graph;
@@ -14,7 +14,7 @@ describe('test_error_handling', () => {
     graph = new WorkflowGraph();
   });
 
-  test('test_retry_policy', () => {
+  test('test_retry_policy', async () => {
     let attempts = 0;
 
     function failingNode(x) {
@@ -28,13 +28,13 @@ describe('test_error_handling', () => {
     // We assume addNode can accept options for retries & backoff
     graph.addNode('retry_node', failingNode, { retries: 3, backoffFactor: 0.1 });
     graph.setEntryPoint('retry_node');
-    const result = graph.execute(1);
+    const result = await graph.executeAsync(1);
 
     expect(attempts).toBe(3);
     expect(result).toBe(2);
   });
 
-  test('test_error_handler', () => {
+  test('test_error_handler', async () => {
     function failingNode(x) {
       throw new Error('Permanent failure');
     }
@@ -47,12 +47,12 @@ describe('test_error_handling', () => {
 
     graph.addNode('fail_node', failingNode, { onError: errorHandler });
     graph.setEntryPoint('fail_node');
-    const result = graph.execute(1);
+    const result = await graph.executeAsync(1);
 
     expect(result).toBe(-1);
   });
 
-  test('test_retry_then_error_handler', () => {
+  test('test_retry_then_error_handler', async () => {
     let attempts = 0;
 
     function failingNode(x) {
@@ -72,7 +72,7 @@ describe('test_error_handling', () => {
       onError: errorHandler
     });
     graph.setEntryPoint('retry_fail_node');
-    const result = graph.execute(1);
+    const result = await graph.executeAsync(1);
 
     // 1 initial attempt + 2 retries = 3 attempts total
     expect(attempts).toBe(3);

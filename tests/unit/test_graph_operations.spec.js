@@ -2,14 +2,14 @@
  * Unit tests for basic graph operations.
  */
 
-const { WorkflowGraph, START, END } = require('../../src/workflow_graph');
+import { WorkflowGraph, START, END } from '../../src/workflow_graph/index.js';
 // If you have custom exceptions, import them too:
-// const {
+// import {
 //   InvalidNodeNameError,
 //   DuplicateNodeError,
 //   InvalidEdgeError,
 //   TypeMismatchError
-// } = require('../../src/workflow_graph/exceptions');
+// } from '../../src/workflow_graph/exceptions.js';
 
 describe('test_graph_operations', () => {
   let graph;
@@ -98,8 +98,8 @@ describe('test_graph_operations', () => {
       return x + 1;
     }
 
-    graph.addNode('str_node', strFunc);
-    graph.addNode('int_node', intFunc);
+    graph.addNode('str_node', strFunc, { outputType: String });
+    graph.addNode('int_node', intFunc, { inputType: Number });
 
     expect(() => {
       graph.addEdge('str_node', 'int_node');

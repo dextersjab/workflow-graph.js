@@ -2,7 +2,7 @@
  * Unit tests for workflow graph execution.
  */
 
-const { WorkflowGraph } = require('../../src/workflow_graph');
+import { WorkflowGraph } from '../../src/workflow_graph/index.js';
 
 describe('test_execution', () => {
   let graph;
@@ -11,7 +11,7 @@ describe('test_execution', () => {
     graph = new WorkflowGraph();
   });
 
-  test('test_simple_workflow_execution', () => {
+  test('test_simple_workflow_execution', async () => {
     function addOne(x) {
       return x + 1;
     }
@@ -26,12 +26,12 @@ describe('test_execution', () => {
     graph.setEntryPoint('add');
     graph.setFinishPoint('multiply');
 
-    const result = graph.execute(1);
+    const result = await graph.executeAsync(1);
     // (1 + 1) * 2 = 4
     expect(result).toBe(4);
   });
 
-  test('test_conditional_workflow_execution', () => {
+  test('test_conditional_workflow_execution', async () => {
     function isEven(x) {
       return x % 2 === 0;
     }
@@ -57,11 +57,11 @@ describe('test_execution', () => {
     graph.setEntryPoint('check');
 
     // Even input => proceed to 'add' node
-    let result = graph.execute(2);
+    let result = await graph.executeAsync(2);
     expect(result).toBe(3);
 
     // Odd input => proceed to 'multiply' node
-    result = graph.execute(3);
+    result = await graph.executeAsync(3);
     expect(result).toBe(6);
   });
 
@@ -79,7 +79,7 @@ describe('test_execution', () => {
     expect(result).toBe(2);
   });
 
-  test('test_callback_execution', () => {
+  test('test_callback_execution', async () => {
     /**
      * Test execution with callbacks for streaming partial results.
      * This demonstrates how callbacks might stream intermediate results
@@ -139,7 +139,7 @@ describe('test_execution', () => {
     graph.setEntryPoint('process');
     graph.setFinishPoint('format');
 
-    const finalResult = graph.execute(5);
+    const finalResult = await graph.executeAsync(5);
 
     expect(finalResult).toBe(110); // ((5 * 10) + 5) * 2
     expect(streamingResults).toHaveLength(3);
