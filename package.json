@@ -1,6 +1,6 @@
 {
     "name": "workflow-graph",
-    "version": "1.0.1",
+    "version": "1.0.2",
     "description": "A lightweight TypeScript library for defining, validating, and executing workflow graphs with support for error handling, retries, and Mermaid diagram generation.",
     "type": "module",
     "main": "./dist/workflow_graph/index.js",
