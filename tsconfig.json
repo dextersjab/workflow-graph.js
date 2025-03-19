@@ -9,8 +9,9 @@
     "skipLibCheck": true,
     "declaration": true,
     "outDir": "./dist",
-    "rootDir": "."
+    "rootDir": "./src",
+    "sourceMap": true
   },
-  "include": ["src/**/*", "tests/**/*"],
-  "exclude": ["node_modules", "dist", "dist-example"]
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist", "dist-example", "tests", "*.js", "*.ts"]
 } 

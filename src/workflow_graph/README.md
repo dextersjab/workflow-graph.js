@@ -1,252 +1,75 @@
-# Workflow Graph JS
+Below is the **TypeScript-oriented** version of your `src/workflow_graph/README.md`. It preserves the **word-for-word** structure and content from your Python edition, except where necessary to reference **TypeScript** files (`*.ts`) and examples instead of Python (`*.py`). Everything else (headings, conceptual descriptions, etc.) remains the same.
 
-A TypeScript library for building, validating, and executing workflow graphs.
+---
 
-## Overview
+# WorkflowGraph package
 
-This library provides a simple yet powerful way to define and execute directed graphs of tasks, with support for:
+This package provides a lightweight framework for building and executing directed, computational workflow graphs in TypeScript. It allows you to define nodes as functions, connect them with edges, and execute the workflow with input data.
 
-- Sequential and parallel execution flows
-- Conditional branching
+## Modules
+
+- `builder.ts`: Contains the `WorkflowGraph` class for constructing and validating workflow graphs
+- `executor.ts`: Contains the `CompiledGraph` class for executing workflow graphs
+- `models.ts`: Defines data models for nodes and branches
+- `constants.ts`: Defines constants like START and END nodes
+- `exceptions.ts`: Custom exceptions for the workflow graph
+
+## Core concepts
+
+- **Nodes**: Functions that process data
+- **Edges**: Connections between nodes that define the flow of data
+- **Branches**: Conditional paths in the workflow
+- **Callbacks**: Functions that can be called after node execution for streaming results
+
+## Features
+
+- Create directed graphs of computational tasks
+- Add conditional branches based on function outputs
+- Type validation between connected nodes
+- Synchronous and asynchronous execution
 - Error handling and retries
-- Input/output type validation
-- Execution visualization
-- Full TypeScript type support
+- Generate Mermaid diagrams of the workflow
 
-## Core Components
+## Basic usage
 
-- **WorkflowGraph**: Builder class for defining the graph structure
-- **CompiledGraph**: Executor class for running the defined workflow
-- **NodeSpec**: Configuration for individual workflow nodes/tasks
-- **Branch**: Represents conditional paths in the workflow
+```ts
+import { WorkflowGraph } from './workflow_graph';
 
-## Example Usage
+// Create a workflow graph
+const graph = new WorkflowGraph();
 
-### TypeScript Example
+// Add nodes (functions)
+graph.addNode("add_one", (x: number) => x + 1);
+graph.addNode("multiply_by_two", (x: number) => x * 2);
 
-```typescript
-import { WorkflowGraph } from 'workflow-graph';
+// Add edges between nodes
+graph.addEdge("add_one", "multiply_by_two");
 
-// Define data types for better type safety
-interface ApiData {
-  status: string;
-  results: any[];
-}
+// Set entry and exit points
+graph.setEntryPoint("add_one");
+graph.setFinishPoint("multiply_by_two");
 
-interface ProcessedData {
-  transformedResults: any[];
-  timestamp: number;
-}
-
-interface DatabaseResult {
-  success: boolean;
-  id: string;
-}
-
-// Create a new workflow
-const workflow = new WorkflowGraph();
-
-// Add nodes (tasks) with proper type annotations
-workflow.addNode<void, ApiData>('fetchData', async () => {
-  // Simulating API fetch
-  const data = await Promise.resolve({
-    status: 'success',
-    results: [1, 2, 3]
-  });
-  return data;
-}, { 
-  retryCount: 3, 
-  retryDelay: 2 
-});
-
-workflow.addNode<ApiData, ProcessedData>('processData', (data) => {
-  return {
-    transformedResults: data.results.map(x => x * 2),
-    timestamp: Date.now()
-  };
-});
-
-workflow.addNode<ProcessedData, DatabaseResult>('storeResults', (results) => {
-  // Simulating database save
-  return {
-    success: true,
-    id: 'db-' + Math.random().toString(36).substring(2)
-  };
-});
-
-// Define the flow
-workflow.setEntryPoint('fetchData')
-  .addEdge('fetchData', 'processData')
-  .addEdge('processData', 'storeResults')
-  .setFinishPoint('storeResults');
-
-// Execute the workflow with async/await
-async function runWorkflow() {
-  // Validate and compile
-  const executable = await workflow.compile();
-  
-  try {
-    // Execute the workflow with explicit type parameters
-    const result = await executable.executeAsync<void, DatabaseResult>();
-    console.log('Workflow completed:', result);
-  } catch (err) {
-    console.error('Workflow failed:', err);
-  }
-}
-
-runWorkflow();
+// Execute the workflow
+const result = graph.execute(5);  // Result: (5 + 1) * 2 = 12
+console.log(result);
 ```
 
-### JavaScript Example
+## Conditional branching
 
-```javascript
-import { WorkflowGraph } from 'workflow-graph';
-
-// Create a new workflow
-const workflow = new WorkflowGraph();
-
-// Add nodes (tasks)
-workflow.addNode('fetchData', async () => {
-  // Simulating API fetch
-  return {
-    status: 'success',
-    results: [1, 2, 3]
-  };
-}, { 
-  retryCount: 3, 
-  retryDelay: 2 
-});
-
-workflow.addNode('processData', (data) => {
-  return {
-    transformedResults: data.results.map(x => x * 2),
-    timestamp: Date.now()
-  };
-});
-
-workflow.addNode('storeResults', (results) => {
-  // Simulating database save
-  return {
-    success: true,
-    id: 'db-' + Math.random().toString(36).substring(2)
-  };
-});
-
-// Define the flow
-workflow.setEntryPoint('fetchData')
-  .addEdge('fetchData', 'processData')
-  .addEdge('processData', 'storeResults')
-  .setFinishPoint('storeResults');
-
-// Execute the workflow with async/await
-async function runWorkflow() {
-  // Validate and compile
-  const executable = await workflow.compile();
-  
-  try {
-    // Execute the workflow
-    const result = await executable.executeAsync();
-    console.log('Workflow completed:', result);
-  } catch (err) {
-    console.error('Workflow failed:', err);
-  }
+```ts
+function isEven(x: number): boolean {
+  return x % 2 === 0;
 }
 
-runWorkflow();
-```
+graph.addNode("check", isEven);
+graph.addNode("handle_even", (x: number) => `Even: ${x}`);
+graph.addNode("handle_odd", (x: number) => `Odd: ${x}`);
 
-## Advanced Features
-
-- **Conditional Branching**: Create dynamic paths based on the output of nodes
-- **Visualization**: Generate Mermaid diagrams of your workflow
-- **Type Checking**: Optional validation of inputs and outputs
-
-## API Documentation
-
-See individual modules for detailed API documentation:
-
-- builder.ts: WorkflowGraph class
-- executor.ts: CompiledGraph class
-- models.ts: NodeSpec and Branch classes
-- exceptions.ts: Custom error types
-- constants.ts: Special node identifiers
-- types.ts: Shared TypeScript interfaces
-
-## ES Modules
-
-This library uses ES modules throughout. Make sure to import it with the `.js` extension:
-
-```typescript
-import { WorkflowGraph } from 'workflow-graph';
-```
-
-## Async Execution
-
-Workflow execution is always asynchronous. When executing workflows:
-
-```typescript
-// Always use executeAsync with async/await
-const result = await workflow.executeAsync(inputData);
-```
-
-The library does provide an `execute()` method for compatibility, but it returns a Promise and is just an alias for `executeAsync()`.
-
-## Error Handling and Retries
-
-The library supports robust error handling:
-
-```typescript
-// Define an error handler type
-type ErrorHandlerFn = (error: Error, data: any) => any;
-
-// Error handler function
-const errorHandler: ErrorHandlerFn = (error, inputData) => {
-  console.error('Failed after retries:', error);
-  return { fallback: true, data: [] };
-};
-
-// Add a node with retry options
-workflow.addNode('fetch_data', fetchDataFunction, {
-  retries: 3,                 // Number of retries
-  backoffFactor: 0.5,         // Delay between retries (in seconds)
-  onError: errorHandler       // Function to call if all retries fail
-});
-```
-
-## Conditional Branches
-
-Create paths that depend on node output values:
-
-```typescript
-// Define node functions
-function processOrder(order: any): number {
-  return order.amount;
-}
-
-function handleSmallOrder(order: any): string {
-  return `Small order processed: ${order.id}`;
-}
-
-function handleLargeOrder(order: any): string {
-  return `Large order processed: ${order.id}`;
-}
-
-// Add nodes to graph
-workflow.addNode<any, number>('process_order', processOrder);
-workflow.addNode<any, string>('small_order', handleSmallOrder);
-workflow.addNode<any, string>('large_order', handleLargeOrder);
-
-// Create a conditional branch based on the output of process_order
-workflow.addConditionalEdges(
-  'process_order',
-  (orderAmount) => orderAmount > 1000 ? 'true' : 'false',
-  {
-    'true': 'large_order',
-    'false': 'small_order'
-  }
+graph.addConditionalEdges(
+  "check",
+  isEven,    // path function
+  { true: "handle_even", false: "handle_odd" }
 );
-
-// Set finish points
-workflow.setFinishPoint('small_order');
-workflow.setFinishPoint('large_order');
 ```
+
+See the project's root [README.md](../../README.md) for more detailed examples and usage instructions.
