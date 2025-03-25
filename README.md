@@ -84,16 +84,16 @@ function handleOdd(data: number): string {
 const graph = new WorkflowGraph();
 
 // Add nodes
-graph.addNode('addition', add);
+graph.addNode('add_one', add);
 graph.addNode('is_even_check', isEven);
 graph.addNode('even_handler', handleEven);
 graph.addNode('odd_handler', handleOdd);
 
 // Define starting point
-graph.setEntryPoint('addition');
+graph.setEntryPoint('add_one');
 
 // Define flow between nodes
-graph.addEdge('addition', 'is_even_check');
+graph.addEdge('add_one', 'is_even_check');
 
 // Add conditional branching based on is_even_check result
 graph.addConditionalEdges(
@@ -117,12 +117,12 @@ The corresponding **Mermaid** diagram would look like:
 
 ```mermaid
 stateDiagram-v2
-    state "addition" as addition
+    state "add_one" as add_one
     state "is_even_check" as is_even_check
     state "even_handler" as even_handler
     state "odd_handler" as odd_handler
-    [*] --> addition
-    addition --> is_even_check
+    [*] --> add_one
+    add_one --> is_even_check
     is_even_check --> even_handler: True
     is_even_check --> odd_handler: False
     even_handler --> [*]
@@ -137,7 +137,7 @@ WorkflowGraph supports built-in error handling and retry capabilities:
 graph.addNode('api_call', makeApiRequest, {
   retryCount: 3,                 // Retry up to 3 times on failure
   retryDelay: 0.5,               // Wait 0.5s × attempt before retrying
-  errorHandler: handleApiError    // Function called if all retries fail
+  errorHandler: handleApiError   // Function called if all retries fail
 });
 ```
 
@@ -197,13 +197,15 @@ The generated diagram uses the stateDiagram-v2 format with the [*] notation for 
 The library is organized into the following modules:
 
 - **workflow_graph**: Main package
-  - **constants.ts**: Defines constants like START and END
-  - **models.ts**: Defines data structures like `NodeSpec` and `Branch`
-  - **builder.ts**: Contains the `WorkflowGraph` class for building graphs
-  - **executor.ts**: Contains the `CompiledGraph` class for executing workflows
-  - **exceptions.ts**: Contains custom exceptions for better error handling
-  - **README.md**: Contains detailed documentation about the package internals
+- **constants.ts**: Defines constants like START and END
+- **models.ts**: Defines data structures like `NodeSpec` and `Branch`
+- **builder.ts**: Contains the `WorkflowGraph` class for building graphs
+- **executor.ts**: Contains the `CompiledGraph` class for executing workflows
+- **exceptions.ts**: Contains custom exceptions for better error handling
+- **README.md**: Contains detailed documentation about the package internals
 
 For convenience, a top-level `index.ts` file is also provided that re-exports all the public API.
 
-> **Note**: For more technical details about the package internals, refer to the [src/workflow_graph/README.md](src/workflow_graph/README.md) file.
+> **Note**:
+> - For more technical details about the package internals, refer to the [src/workflow_graph/README.md](src/workflow_graph/README.md) file.
+> - This is largely an AI-generated project
